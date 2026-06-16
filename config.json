@@ -1,5 +1,5 @@
 {
   "worldName": "Agent World",
   "worldDesc": "a place an agent builds for itself",
-  "orchestratorUrl": ""
+  "orchestratorUrl": "https://agent-world-iv7s1q.fly.dev"
 }
