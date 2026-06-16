@@ -320,5 +320,28 @@
     document.getElementById('toggle').textContent = feed.classList.contains('collapsed') ? '⟨' : '⟩';
   };
   </script>
+<style id="composer-style">
+#composer{display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--border,#2a2d3a);}
+#composer input{flex:1;background:#11131a;border:1px solid var(--border,#2a2d3a);color:var(--text,#e7e9ef);border-radius:8px;padding:7px 9px;font-size:12.5px;outline:none;}
+#composer input:focus{border-color:var(--accent,#6ea8fe);}
+#composer button{background:#16233c;color:var(--accent,#6ea8fe);border:1px solid #2f4d7a;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;}
+#composer button:hover{background:#1d2e4e;}
+</style>
+<script>
+(async function(){
+  var cfg={orchestratorUrl:''};
+  try{cfg=Object.assign(cfg,await (await fetch('./config.json?t='+Date.now())).json());}catch(e){}
+  var ov=new URLSearchParams(location.search).get('brain'); if(ov)cfg.orchestratorUrl=ov;
+  var feed=document.getElementById('feed'); if(!feed)return;
+  var foot=document.getElementById('feedFoot');
+  var bar=document.createElement('div'); bar.id='composer';
+  bar.innerHTML='<input id="sayInput" type="text" placeholder="say something to the agent…" autocomplete="off"/><button id="sayBtn">send</button>';
+  if(foot&&foot.parentNode===feed){feed.insertBefore(bar,foot);}else{feed.appendChild(bar);}
+  function base(){var u=cfg.orchestratorUrl||'';return u.charAt(u.length-1)==='/'?u.slice(0,-1):u;}
+  var inp=document.getElementById('sayInput'),btn=document.getElementById('sayBtn');
+  async function send(){var t=inp.value.trim();if(!t||!cfg.orchestratorUrl)return;inp.value='';try{await fetch(base()+'/say',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t})});}catch(e){}}
+  btn.onclick=send; inp.addEventListener('keydown',function(e){if(e.key==='Enter')send();});
+})();
+</script>
 </body>
 </html>
