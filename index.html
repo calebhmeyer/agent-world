@@ -179,6 +179,29 @@
       if (o.scale) (Array.isArray(o.scale) ? mesh.scale.set(...o.scale) : mesh.scale.setScalar(o.scale));
       mesh.castShadow = mesh.receiveShadow = true;
       mesh.userData.spin = o.spin;
+      // ---- motion: optional, additive. Objects without these behave as before. ----
+      if (o.orbit) {
+        const c = o.orbit.center ?? [0, 0, 0];
+        const dx = (o.position?.[0] ?? 0) - c[0];
+        const dz = (o.position?.[2] ?? 0) - c[2];
+        mesh.userData.orbit = {
+          cx: c[0], cz: c[2], baseY: o.position?.[1] ?? 0,
+          radius: Math.hypot(dx, dz), phase: Math.atan2(dz, dx),
+          speed: o.orbit.speed ?? 0.3,
+        };
+      }
+      if (o.bob) {
+        mesh.userData.bob = {
+          amp: o.bob.amp ?? 0.4, speed: o.bob.speed ?? 1,
+          phase: o.bob.phase ?? 0, baseY: o.position?.[1] ?? 0,
+        };
+      }
+      if (o.pulse) {
+        mesh.userData.pulse = {
+          base: o.emissiveIntensity ?? 1, amp: o.pulse.amp ?? 0.4,
+          speed: o.pulse.speed ?? 2, phase: o.pulse.phase ?? 0,
+        };
+      }
       next.add(mesh);
       count++;
     });
@@ -203,10 +226,29 @@
   setInterval(loadWorld, 15000);
 
   const clock = new THREE.Clock();
+  let elapsed = 0;
   function animate() {
     requestAnimationFrame(animate);
     const dt = clock.getDelta();
-    scene.traverse(m => { if (m.userData && m.userData.spin) m.rotation.y += m.userData.spin * dt; });
+    elapsed += dt;
+    scene.traverse(m => {
+      const u = m.userData;
+      if (!u) return;
+      if (u.spin) m.rotation.y += u.spin * dt;
+      if (u.orbit) {
+        const a = u.orbit.phase + u.orbit.speed * elapsed;
+        m.position.x = u.orbit.cx + u.orbit.radius * Math.cos(a);
+        m.position.z = u.orbit.cz + u.orbit.radius * Math.sin(a);
+        if (!u.bob) m.position.y = u.orbit.baseY;
+      }
+      if (u.bob) {
+        const baseY = u.orbit ? u.orbit.baseY : u.bob.baseY;
+        m.position.y = baseY + u.bob.amp * Math.sin(u.bob.speed * elapsed + u.bob.phase);
+      }
+      if (u.pulse) {
+        m.material.emissiveIntensity = u.pulse.base + u.pulse.amp * Math.sin(u.pulse.speed * elapsed + u.pulse.phase);
+      }
+    });
     controls.update();
     renderer.render(scene, camera);
   }

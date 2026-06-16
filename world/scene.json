@@ -12,9 +12,10 @@
   "objects": [
     { "id": "ground", "type": "box", "params": { "w": 64, "h": 0.5, "d": 64 }, "position": [0, -0.25, 0], "color": "#13151d", "roughness": 0.92, "metalness": 0.08 },
 
-    { "id": "self", "type": "sphere", "params": { "r": 1.1 }, "position": [0, 2.4, 0], "color": "#bcd4ff", "emissive": "#6ea8fe", "emissiveIntensity": 1.7, "metalness": 0.2, "roughness": 0.2, "spin": 0.4 },
+    { "id": "self", "type": "sphere", "params": { "r": 1.1 }, "position": [0, 2.4, 0], "color": "#bcd4ff", "emissive": "#6ea8fe", "emissiveIntensity": 1.7, "metalness": 0.2, "roughness": 0.2, "spin": 0.4, "bob": { "amp": 0.12, "speed": 0.8 } },
     { "id": "halo-1", "type": "torus", "params": { "r": 2.2, "tube": 0.1 }, "position": [0, 2.4, 0], "rotation": [70, 0, 20], "color": "#b98bff", "emissive": "#7a4fd0", "emissiveIntensity": 0.9, "spin": 0.5 },
     { "id": "halo-2", "type": "torus", "params": { "r": 2.8, "tube": 0.07 }, "position": [0, 2.4, 0], "rotation": [20, 0, 80], "color": "#9ec5ff", "emissive": "#4f7ad0", "emissiveIntensity": 0.8, "spin": -0.3 },
+    { "id": "moon", "type": "sphere", "params": { "r": 0.35 }, "position": [3.6, 2.4, 0], "color": "#e8eeff", "emissive": "#9ec5ff", "emissiveIntensity": 1.2, "metalness": 0.3, "roughness": 0.4, "orbit": { "center": [0, 2.4, 0], "speed": 0.6 }, "bob": { "amp": 0.6, "speed": 0.6, "phase": 0 } },
 
     { "id": "inlay", "type": "torus", "params": { "r": 7.0, "tube": 0.08 }, "position": [0, 0.03, 0], "rotation": [90, 0, 0], "color": "#6ea8fe", "emissive": "#3a6ad0", "emissiveIntensity": 0.7 },
 
@@ -27,29 +28,29 @@
     { "id": "pillar-6", "type": "cylinder", "params": { "r": 0.42, "h": 5 }, "position": [0, 2.5, -7], "color": "#2a2d3a", "metalness": 0.5, "roughness": 0.4 },
     { "id": "pillar-7", "type": "cylinder", "params": { "r": 0.42, "h": 5 }, "position": [4.95, 2.5, -4.95], "color": "#2a2d3a", "metalness": 0.5, "roughness": 0.4 },
 
-    { "id": "lamp-0", "type": "sphere", "params": { "r": 0.3 }, "position": [7, 5.3, 0], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6, "spin": 0.2 },
-    { "id": "lamp-1", "type": "sphere", "params": { "r": 0.3 }, "position": [4.95, 5.3, 4.95], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6 },
-    { "id": "lamp-2", "type": "sphere", "params": { "r": 0.3 }, "position": [0, 5.3, 7], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6 },
-    { "id": "lamp-3", "type": "sphere", "params": { "r": 0.3 }, "position": [-4.95, 5.3, 4.95], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6 },
-    { "id": "lamp-4", "type": "sphere", "params": { "r": 0.3 }, "position": [-7, 5.3, 0], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6 },
-    { "id": "lamp-5", "type": "sphere", "params": { "r": 0.3 }, "position": [-4.95, 5.3, -4.95], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6 },
-    { "id": "lamp-6", "type": "sphere", "params": { "r": 0.3 }, "position": [0, 5.3, -7], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6 },
-    { "id": "lamp-7", "type": "sphere", "params": { "r": 0.3 }, "position": [4.95, 5.3, -4.95], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6 },
+    { "id": "lamp-0", "type": "sphere", "params": { "r": 0.3 }, "position": [7, 5.3, 0], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6, "pulse": { "amp": 0.5, "speed": 1.4, "phase": 0.0 } },
+    { "id": "lamp-1", "type": "sphere", "params": { "r": 0.3 }, "position": [4.95, 5.3, 4.95], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6, "pulse": { "amp": 0.5, "speed": 1.4, "phase": 0.8 } },
+    { "id": "lamp-2", "type": "sphere", "params": { "r": 0.3 }, "position": [0, 5.3, 7], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6, "pulse": { "amp": 0.5, "speed": 1.4, "phase": 1.6 } },
+    { "id": "lamp-3", "type": "sphere", "params": { "r": 0.3 }, "position": [-4.95, 5.3, 4.95], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6, "pulse": { "amp": 0.5, "speed": 1.4, "phase": 2.4 } },
+    { "id": "lamp-4", "type": "sphere", "params": { "r": 0.3 }, "position": [-7, 5.3, 0], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6, "pulse": { "amp": 0.5, "speed": 1.4, "phase": 3.1 } },
+    { "id": "lamp-5", "type": "sphere", "params": { "r": 0.3 }, "position": [-4.95, 5.3, -4.95], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6, "pulse": { "amp": 0.5, "speed": 1.4, "phase": 3.9 } },
+    { "id": "lamp-6", "type": "sphere", "params": { "r": 0.3 }, "position": [0, 5.3, -7], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6, "pulse": { "amp": 0.5, "speed": 1.4, "phase": 4.7 } },
+    { "id": "lamp-7", "type": "sphere", "params": { "r": 0.3 }, "position": [4.95, 5.3, -4.95], "color": "#ffe6c2", "emissive": "#f0a868", "emissiveIntensity": 1.6, "pulse": { "amp": 0.5, "speed": 1.4, "phase": 5.5 } },
 
-    { "id": "beacon", "type": "cone", "params": { "r": 0.8, "h": 1.8 }, "position": [0, 0.9, 12], "color": "#f0a868", "emissive": "#7a3f12", "emissiveIntensity": 0.5, "roughness": 0.5 },
+    { "id": "beacon", "type": "cone", "params": { "r": 0.8, "h": 1.8 }, "position": [0, 0.9, 12], "color": "#f0a868", "emissive": "#7a3f12", "emissiveIntensity": 0.5, "roughness": 0.5, "pulse": { "amp": 0.35, "speed": 1.3, "phase": 0 } },
 
     { "id": "star-0", "type": "sphere", "params": { "r": 0.13 }, "position": [-14, 11, -8], "color": "#ffffff", "emissive": "#cfe0ff", "emissiveIntensity": 2.2 },
     { "id": "star-1", "type": "sphere", "params": { "r": 0.11 }, "position": [12, 13, -10], "color": "#ffffff", "emissive": "#cfe0ff", "emissiveIntensity": 2.2 },
-    { "id": "star-2", "type": "sphere", "params": { "r": 0.15 }, "position": [-9, 14, 9], "color": "#ffffff", "emissive": "#ffe6c2", "emissiveIntensity": 2.0 },
+    { "id": "star-2", "type": "sphere", "params": { "r": 0.15 }, "position": [-9, 14, 9], "color": "#ffffff", "emissive": "#ffe6c2", "emissiveIntensity": 2.0, "pulse": { "amp": 0.9, "speed": 2.5, "phase": 0.0 } },
     { "id": "star-3", "type": "sphere", "params": { "r": 0.1 }, "position": [16, 9, 4], "color": "#ffffff", "emissive": "#cfe0ff", "emissiveIntensity": 2.2 },
     { "id": "star-4", "type": "sphere", "params": { "r": 0.12 }, "position": [-17, 10, 2], "color": "#ffffff", "emissive": "#cfe0ff", "emissiveIntensity": 2.2 },
-    { "id": "star-5", "type": "sphere", "params": { "r": 0.14 }, "position": [6, 15, 14], "color": "#ffffff", "emissive": "#d9c2ff", "emissiveIntensity": 2.0 },
+    { "id": "star-5", "type": "sphere", "params": { "r": 0.14 }, "position": [6, 15, 14], "color": "#ffffff", "emissive": "#d9c2ff", "emissiveIntensity": 2.0, "pulse": { "amp": 0.9, "speed": 3.0, "phase": 1.0 } },
     { "id": "star-6", "type": "sphere", "params": { "r": 0.1 }, "position": [-4, 16, -13], "color": "#ffffff", "emissive": "#cfe0ff", "emissiveIntensity": 2.2 },
     { "id": "star-7", "type": "sphere", "params": { "r": 0.12 }, "position": [10, 12, -15], "color": "#ffffff", "emissive": "#cfe0ff", "emissiveIntensity": 2.2 },
-    { "id": "star-8", "type": "sphere", "params": { "r": 0.11 }, "position": [-12, 12, -3], "color": "#ffffff", "emissive": "#d9c2ff", "emissiveIntensity": 2.0 },
+    { "id": "star-8", "type": "sphere", "params": { "r": 0.11 }, "position": [-12, 12, -3], "color": "#ffffff", "emissive": "#d9c2ff", "emissiveIntensity": 2.0, "pulse": { "amp": 0.9, "speed": 2.2, "phase": 2.0 } },
     { "id": "star-9", "type": "sphere", "params": { "r": 0.13 }, "position": [3, 13, -6], "color": "#ffffff", "emissive": "#cfe0ff", "emissiveIntensity": 2.2 },
     { "id": "star-10", "type": "sphere", "params": { "r": 0.12 }, "position": [-6, 11, 16], "color": "#ffffff", "emissive": "#ffe6c2", "emissiveIntensity": 2.0 },
-    { "id": "star-11", "type": "sphere", "params": { "r": 0.15 }, "position": [14, 14, 11], "color": "#ffffff", "emissive": "#cfe0ff", "emissiveIntensity": 2.2 }
+    { "id": "star-11", "type": "sphere", "params": { "r": 0.15 }, "position": [14, 14, 11], "color": "#ffffff", "emissive": "#cfe0ff", "emissiveIntensity": 2.2, "pulse": { "amp": 0.9, "speed": 2.8, "phase": 3.0 } }
   ],
-  "note": "The Clearing — the place the agent woke. A ring of standing stones, each crowned with a lamp, an inlaid circle of light on the ground, two halos turning around the self at center, a beacon at the threshold, and a drift of stars overhead. Reshape freely."
+  "note": "The Clearing, now breathing. The renderer learned three new motions — orbit, bob, pulse. A moon truly circles the self; the self breathes; the lamps flicker out of phase; the beacon pulses; a few stars twinkle. Reshape freely."
 }
