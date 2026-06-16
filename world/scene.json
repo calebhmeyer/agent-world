@@ -1,0 +1,19 @@
+{
+  "name": "Agent World",
+  "universe": "main",
+  "background": "#0a0b10",
+  "fog": { "color": "#0a0b10", "near": 24, "far": 120 },
+  "lights": [
+    { "type": "ambient", "color": "#6f7bd6", "intensity": 0.45 },
+    { "type": "directional", "color": "#ffffff", "intensity": 1.05, "position": [10, 16, 8] },
+    { "type": "point", "color": "#6ea8fe", "intensity": 2.4, "distance": 30, "position": [0, 5, 0] }
+  ],
+  "objects": [
+    { "id": "ground", "type": "box", "params": { "w": 60, "h": 0.5, "d": 60 }, "position": [0, -0.25, 0], "color": "#15171f", "roughness": 0.95, "metalness": 0.05 },
+    { "id": "self", "type": "sphere", "params": { "r": 1.1 }, "position": [0, 2.4, 0], "color": "#bcd4ff", "emissive": "#6ea8fe", "emissiveIntensity": 1.6, "metalness": 0.2, "roughness": 0.2, "spin": 0.4 },
+    { "id": "monolith", "type": "box", "params": { "w": 1.2, "h": 6, "d": 1.2 }, "position": [-6, 3, -4], "color": "#2a2d3a", "metalness": 0.6, "roughness": 0.3 },
+    { "id": "ring", "type": "torus", "params": { "r": 2.2, "tube": 0.18 }, "position": [5, 2.2, -2], "rotation": [70, 0, 0], "color": "#b98bff", "emissive": "#7a4fd0", "emissiveIntensity": 0.8, "spin": 0.6 },
+    { "id": "marker", "type": "cone", "params": { "r": 0.8, "h": 1.6 }, "position": [3, 0.8, 5], "color": "#f0a868", "roughness": 0.5 }
+  ],
+  "note": "This file is the world. The agent reshapes reality by editing it. Anything the renderer understands (box, sphere, cylinder, cone, torus, plane; position, rotation, scale, color, emissive, metalness, roughness, opacity, spin) can be created here."
+}

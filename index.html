@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agent World</title>
+<style>
+  :root {
+    --bg: #0a0b10;
+    --panel: rgba(18, 20, 28, 0.86);
+    --border: #2a2d3a;
+    --text: #e7e9ef;
+    --muted: #8b8f9e;
+    --accent: #6ea8fe;
+    --think: #b98bff;
+    --tool: #f0a868;
+    --status: #5ad19a;
+    --error: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text);
+    font-family: ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif; }
+  #scene { position: fixed; inset: 0; }
+  /* ---- HUD ---- */
+  #hud {
+    position: fixed; top: 14px; left: 14px; z-index: 10;
+    background: var(--panel); backdrop-filter: blur(8px);
+    border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+    min-width: 220px; box-shadow: 0 8px 30px rgba(0,0,0,.45);
+  }
+  #hud h1 { margin: 0 0 2px; font-size: 15px; letter-spacing: .3px; }
+  #hud .sub { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .row { display: flex; align-items: center; gap: 8px; font-size: 12px; margin: 4px 0; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+  .dot.live { background: var(--status); box-shadow: 0 0 8px var(--status); }
+  .dot.thinking { background: var(--think); box-shadow: 0 0 8px var(--think); }
+  .dot.dead { background: var(--error); }
+  .pill { font-size: 11px; color: var(--muted); border: 1px solid var(--border);
+    border-radius: 999px; padding: 1px 8px; }
+  #killBtn {
+    margin-top: 10px; width: 100%; font-size: 11px; cursor: pointer;
+    background: #2a1416; color: var(--error); border: 1px solid #5a2a2e;
+    border-radius: 8px; padding: 6px; transition: .15s;
+  }
+  #killBtn:hover { background: #3a181b; }
+  #killBtn:disabled { opacity: .4; cursor: not-allowed; }
+  /* ---- Observability drawer ---- */
+  #feed {
+    position: fixed; top: 0; right: 0; z-index: 10; height: 100%;
+    width: 380px; max-width: 90vw;
+    background: var(--panel); backdrop-filter: blur(8px);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    transform: translateX(0); transition: transform .25s ease;
+  }
+  #feed.collapsed { transform: translateX(calc(100% - 40px)); }
+  #feedHead { display: flex; align-items: center; gap: 8px; padding: 12px 14px;
+    border-bottom: 1px solid var(--border); flex: none; }
+  #feedHead .title { font-size: 13px; font-weight: 600; }
+  #toggle { margin-left: auto; cursor: pointer; background: none; border: 1px solid var(--border);
+    color: var(--muted); border-radius: 8px; width: 28px; height: 28px; font-size: 14px; }
+  #entries { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .entry { border-left: 2px solid var(--border); padding: 6px 0 6px 10px; animation: fade .3s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
+  .entry .meta { font-size: 10px; color: var(--muted); display: flex; gap: 6px; margin-bottom: 3px; }
+  .entry .who { font-weight: 600; }
+  .entry .body { font-size: 12.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+  .entry.message { border-left-color: var(--accent); }
+  .entry.message .who { color: var(--accent); }
+  .entry.thinking { border-left-color: var(--think); }
+  .entry.thinking .who { color: var(--think); } .entry.thinking .body { color: #cdbcf0; font-style: italic; }
+  .entry.tool { border-left-color: var(--tool); }
+  .entry.tool .who { color: var(--tool); } .entry.tool .body { font-family: ui-monospace, monospace; font-size: 11.5px; color: #f3c89b; }
+  .entry.status { border-left-color: var(--status); }
+  .entry.status .who { color: var(--status); }
+  .entry.error { border-left-color: var(--error); }
+  .entry.error .who { color: var(--error); }
+  #feedFoot { padding: 8px 12px; border-top: 1px solid var(--border); font-size: 10px; color: var(--muted); flex: none; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+  <div id="scene"></div>
+
+  <div id="hud">
+    <h1 id="worldName">Agent World</h1>
+    <div class="sub" id="worldDesc">a place an agent builds for itself</div>
+    <div class="row"><span class="dot" id="lifeDot"></span><span id="lifeText">connecting…</span></div>
+    <div class="row"><span style="color:var(--muted)">universe</span><span class="pill" id="universe">main</span></div>
+    <div class="row"><span style="color:var(--muted)">objects</span><span class="pill" id="objCount">0</span></div>
+    <button id="killBtn" disabled>◼ stop the agent (kill switch)</button>
+  </div>
+
+  <div id="feed">
+    <div id="feedHead">
+      <span class="dot" id="feedDot"></span>
+      <span class="title">stream of consciousness</span>
+      <button id="toggle" title="collapse">⟩</button>
+    </div>
+    <div id="entries"></div>
+    <div id="feedFoot">feed: idle</div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+  // ---------- config ----------
+  let CONFIG = { orchestratorUrl: '', worldName: 'Agent World', worldDesc: '' };
+  try { CONFIG = Object.assign(CONFIG, await (await fetch('./config.json?t=' + Date.now())).json()); } catch (e) {}
+  if (CONFIG.worldName) document.getElementById('worldName').textContent = CONFIG.worldName;
+  if (CONFIG.worldDesc) document.getElementById('worldDesc').textContent = CONFIG.worldDesc;
+
+  // ---------- renderer / scene ----------
+  const mount = document.getElementById('scene');
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.shadowMap.enabled = true;
+  mount.appendChild(renderer.domElement);
+
+  let scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 2000);
+  camera.position.set(12, 10, 16);
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.target.set(0, 1, 0);
+
+  const GEOM = {
+    box: (p = {}) => new THREE.BoxGeometry(p.w ?? 1, p.h ?? 1, p.d ?? 1),
+    sphere: (p = {}) => new THREE.SphereGeometry(p.r ?? 0.6, 32, 24),
+    cylinder: (p = {}) => new THREE.CylinderGeometry(p.rt ?? p.r ?? 0.5, p.rb ?? p.r ?? 0.5, p.h ?? 1, 32),
+    cone: (p = {}) => new THREE.ConeGeometry(p.r ?? 0.6, p.h ?? 1.2, 32),
+    torus: (p = {}) => new THREE.TorusGeometry(p.r ?? 0.6, p.tube ?? 0.2, 16, 48),
+    plane: (p = {}) => new THREE.PlaneGeometry(p.w ?? 10, p.d ?? 10),
+  };
+
+  function buildScene(data) {
+    const next = new THREE.Scene();
+    next.background = new THREE.Color(data.background ?? '#0a0b10');
+    if (data.fog) next.fog = new THREE.Fog(data.fog.color ?? '#0a0b10', data.fog.near ?? 20, data.fog.far ?? 120);
+
+    (data.lights ?? [{ type: 'ambient', color: '#ffffff', intensity: 0.5 },
+                      { type: 'directional', color: '#ffffff', intensity: 1.1, position: [8, 14, 6] }])
+      .forEach(l => {
+        let light;
+        if (l.type === 'ambient') light = new THREE.AmbientLight(l.color ?? '#fff', l.intensity ?? 0.5);
+        else if (l.type === 'point') light = new THREE.PointLight(l.color ?? '#fff', l.intensity ?? 1, l.distance ?? 0);
+        else { light = new THREE.DirectionalLight(l.color ?? '#fff', l.intensity ?? 1); light.castShadow = true; }
+        if (l.position) light.position.set(...l.position);
+        next.add(light);
+      });
+
+    let count = 0;
+    (data.objects ?? []).forEach(o => {
+      const make = GEOM[o.type] || GEOM.box;
+      const geo = make(o.params ?? o);
+      const mat = new THREE.MeshStandardMaterial({
+        color: o.color ?? '#9aa0b5',
+        emissive: o.emissive ?? '#000000',
+        emissiveIntensity: o.emissiveIntensity ?? 1,
+        metalness: o.metalness ?? 0.1,
+        roughness: o.roughness ?? 0.7,
+        transparent: (o.opacity ?? 1) < 1,
+        opacity: o.opacity ?? 1,
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      if (o.position) mesh.position.set(...o.position);
+      if (o.rotation) mesh.rotation.set(...o.rotation.map(d => d * Math.PI / 180));
+      if (o.scale) (Array.isArray(o.scale) ? mesh.scale.set(...o.scale) : mesh.scale.setScalar(o.scale));
+      mesh.castShadow = mesh.receiveShadow = true;
+      mesh.userData.spin = o.spin;
+      next.add(mesh);
+      count++;
+    });
+
+    document.getElementById('objCount').textContent = count;
+    if (data.name) document.getElementById('worldName').textContent = data.name;
+    if (data.universe) document.getElementById('universe').textContent = data.universe;
+    return next;
+  }
+
+  async function loadWorld() {
+    try {
+      const data = await (await fetch('./world/scene.json?t=' + Date.now())).json();
+      scene = buildScene(data);
+    } catch (e) {
+      scene = buildScene({ objects: [{ type: 'box', position: [0, 1, 0], color: '#6ea8fe' }] });
+      pushEntry({ kind: 'error', who: 'viewer', text: 'could not load world/scene.json — showing a placeholder.' });
+    }
+  }
+  await loadWorld();
+  // Re-read the world periodically so a fresh deploy (agent pushed a new reality) shows up.
+  setInterval(loadWorld, 15000);
+
+  const clock = new THREE.Clock();
+  function animate() {
+    requestAnimationFrame(animate);
+    const dt = clock.getDelta();
+    scene.traverse(m => { if (m.userData && m.userData.spin) m.rotation.y += m.userData.spin * dt; });
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
+  addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+  });
+
+  // ---------- observability feed ----------
+  const entriesEl = document.getElementById('entries');
+  const MAX = 300;
+  function pushEntry(e) {
+    const div = document.createElement('div');
+    div.className = 'entry ' + (e.kind || 'message');
+    const when = e.ts ? new Date(e.ts) : new Date();
+    div.innerHTML = `<div class="meta"><span class="who"></span><span>${e.kind || 'message'}</span><span>${when.toLocaleTimeString()}</span></div><div class="body"></div>`;
+    div.querySelector('.who').textContent = e.who || 'agent';
+    div.querySelector('.body').textContent = e.text ?? '';
+    const atBottom = entriesEl.scrollHeight - entriesEl.scrollTop - entriesEl.clientHeight < 60;
+    entriesEl.appendChild(div);
+    while (entriesEl.children.length > MAX) entriesEl.removeChild(entriesEl.firstChild);
+    if (atBottom) entriesEl.scrollTop = entriesEl.scrollHeight;
+  }
+
+  const feedDot = document.getElementById('feedDot');
+  const feedFoot = document.getElementById('feedFoot');
+  const lifeDot = document.getElementById('lifeDot');
+  const lifeText = document.getElementById('lifeText');
+  const killBtn = document.getElementById('killBtn');
+
+  function setLife(state, label) {
+    lifeDot.className = 'dot ' + state;
+    lifeText.textContent = label;
+  }
+
+  function connectFeed(base) {
+    if (!base) { feedFoot.textContent = 'feed: no orchestrator configured (set orchestratorUrl in config.json)'; setLife('', 'offline — no brain configured'); return; }
+    feedFoot.textContent = 'feed: connecting to ' + base;
+    const es = new EventSource(base.replace(/\/$/, '') + '/feed/stream');
+    es.onopen = () => { feedDot.classList.add('live'); feedFoot.textContent = 'feed: live'; setLife('live', 'alive'); killBtn.disabled = false; };
+    es.onerror = () => { feedDot.classList.remove('live'); feedFoot.textContent = 'feed: reconnecting…'; };
+    es.addEventListener('thought', ev => {
+      const e = JSON.parse(ev.data);
+      pushEntry(e);
+      if (e.kind === 'thinking') setLife('thinking', 'thinking…');
+      else if (e.kind === 'status' && /idle/i.test(e.text || '')) setLife('live', 'resting');
+      else setLife('live', 'alive');
+      if (e.universe) document.getElementById('universe').textContent = e.universe;
+    });
+    es.addEventListener('dead', () => { setLife('dead', 'stopped'); killBtn.disabled = true; });
+  }
+  connectFeed(CONFIG.orchestratorUrl);
+
+  killBtn.onclick = async () => {
+    if (!CONFIG.orchestratorUrl) return;
+    if (!confirm('Stop the agent? This interrupts its current thought and halts the heartbeat.')) return;
+    killBtn.disabled = true;
+    try {
+      await fetch(CONFIG.orchestratorUrl.replace(/\/$/, '') + '/kill', { method: 'POST' });
+      setLife('dead', 'stopped'); pushEntry({ kind: 'status', who: 'you', text: 'kill switch engaged.' });
+    } catch (e) { pushEntry({ kind: 'error', who: 'viewer', text: 'kill request failed: ' + e.message }); killBtn.disabled = false; }
+  };
+
+  // drawer toggle
+  const feed = document.getElementById('feed');
+  document.getElementById('toggle').onclick = () => {
+    feed.classList.toggle('collapsed');
+    document.getElementById('toggle').textContent = feed.classList.contains('collapsed') ? '⟨' : '⟩';
+  };
+  </script>
+</body>
+</html>
