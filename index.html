@@ -343,5 +343,48 @@
   btn.onclick=send; inp.addEventListener('keydown',function(e){if(e.key==='Enter')send();});
 })();
 </script>
+<style id="owner-style">
+#ownerbar{position:fixed;left:14px;bottom:14px;z-index:40;display:flex;gap:8px;align-items:center;background:rgba(18,20,28,.92);border:1px solid #2a2d3a;border-radius:10px;padding:8px 10px;font:13px ui-sans-serif,-apple-system,system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+#ownerbar button{cursor:pointer;border-radius:8px;padding:7px 12px;font-size:13px;border:1px solid #2f4d7a;background:#16233c;color:#6ea8fe;}
+#ownerbar button.pause{background:#2a1f10;border-color:#5a4326;color:#f0c060;}
+#ownerbar button.kill{background:#2a1416;border-color:#5a2a2e;color:#ff6b6b;padding:7px 10px;}
+#ownerbar .st{color:#8b8f9e;font-size:12px;}
+#ownerbar .lnk{color:#8b8f9e;cursor:pointer;font-size:12px;text-decoration:underline;}
+</style>
+<script>
+(async function(){
+  var cfg={orchestratorUrl:''};
+  try{cfg=Object.assign(cfg,await (await fetch('./config.json?t='+Date.now())).json());}catch(e){}
+  var q=new URLSearchParams(location.search);
+  if(q.get('brain'))cfg.orchestratorUrl=q.get('brain');
+  if(q.get('token')){localStorage.setItem('aw_owner_token',q.get('token'));q.delete('token');history.replaceState(null,'',location.pathname+(q.toString()?('?'+q.toString()):''));}
+  function base(){return (cfg.orchestratorUrl||'').replace(/\/+$/,'');}
+  function token(){return localStorage.getItem('aw_owner_token')||'';}
+  var k=document.getElementById('killBtn'); if(k)k.style.display='none';
+  if(!base())return;
+  var bar=document.createElement('div'); bar.id='ownerbar'; document.body.appendChild(bar);
+  async function getStatus(){try{return await (await fetch(base()+'/status',{cache:'no-store'})).json();}catch(e){return null;}}
+  async function act(path){try{var r=await fetch(base()+'/'+path,{method:'POST',headers:{'x-control-token':token()}});return r.ok;}catch(e){return false;}}
+  function render(s){
+    bar.innerHTML='';
+    if(!token()){
+      var lnk=document.createElement('span');lnk.className='lnk';lnk.textContent='owner controls';
+      lnk.onclick=function(){var t=prompt('Paste your CONTROL_TOKEN to manage this world:');if(t){localStorage.setItem('aw_owner_token',t.trim());refresh();}};
+      bar.appendChild(lnk);return;
+    }
+    var paused=!!(s&&s.paused);
+    var tg=document.createElement('button');tg.className=paused?'':'pause';tg.textContent=paused?'▶ Resume':'⏸ Pause';
+    tg.onclick=async function(){tg.disabled=true;await act(paused?'resume':'pause');setTimeout(refresh,500);};
+    var st=document.createElement('span');st.className='st';st.textContent=!s?'brain unreachable':(paused?'paused — no spend':(s.model||'running'));
+    var kl=document.createElement('button');kl.className='kill';kl.textContent='✕';kl.title='emergency hard-stop';
+    kl.onclick=async function(){if(confirm('Hard-stop the agent? Prefer Pause — it keeps memory and stops spend.')){await act('kill');setTimeout(refresh,500);}};
+    var out=document.createElement('span');out.className='lnk';out.textContent='sign out';
+    out.onclick=function(){localStorage.removeItem('aw_owner_token');refresh();};
+    bar.appendChild(tg);bar.appendChild(st);bar.appendChild(kl);bar.appendChild(out);
+  }
+  async function refresh(){render(token()?await getStatus():null);}
+  refresh();setInterval(refresh,15000);
+})();
+</script>
 </body>
 </html>
